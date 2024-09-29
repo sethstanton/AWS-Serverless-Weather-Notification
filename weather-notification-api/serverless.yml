@@ -1,0 +1,37 @@
+service: weather-notification-api
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: eu-west-2
+  environment:
+#reverse changes here to avoid exposing api key
+
+functions:
+  subscribe:
+    handler: handler.subscribe
+    events:
+      - http:
+          path: subscribe
+          method: post
+          cors: true
+
+  sendWeatherNotifications:
+    handler: handler.sendWeatherNotifications
+    #uncomment these to send the notifications every day
+    #events:
+      #- schedule: cron(0 8 * * ? *) # Runs every day at 8 AM UTC
+
+resources:
+  Resources:
+    SubscriptionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Subscriptions
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
